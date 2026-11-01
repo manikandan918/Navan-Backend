@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const nodemailer = require('nodemailer');
+const { createTransport } = require('nodemailer');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
@@ -35,7 +35,7 @@ const limiter = rateLimit({
 
 app.use('/api/contact', limiter);
 
-const transporter = nodemailer.createTransport({
+const transporter = createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT) || 587,
   secure: process.env.EMAIL_PORT === '465',
@@ -59,7 +59,6 @@ app.post('/api/contact', async (req, res) => {
     });
   }
 
-  // Basic email format check
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({
@@ -104,10 +103,10 @@ app.post('/api/contact', async (req, res) => {
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 app.listen(PORT, () => {
